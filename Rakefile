@@ -1,12 +1,12 @@
-markdown_files = Dir.open("./docs",&:to_a).reject{ |f| f.match(%r{^\.}) }
+markdown_files = Dir.open("./docs",&:to_a).reject{ |f| f.match(%r{^\.}) }.map{|f| f.sub(/\.md/,'')}
 
 desc 'generate pdf'
 markdown_files.each do |filename|
-  file "./pdf/" + filename + ".pdf" => [ "./docs/"+filename , "./header.html" ] do
+  file "./pdf/" + filename + ".pdf" => [ "./docs/"+filename+'.md' , "./header.html" ] do
     require 'kramdown'
     header = File.read('./header.html')
     footer = "</body></html>"
-    body = Kramdown::Document.new(File.read('./docs/' + filename)).to_html
+    body = Kramdown::Document.new(File.read('./docs/' + filename + '.md')).to_html
     File.open('./temp.html', 'w') do |f|
       [header, body, footer].each {|s| f.puts s}
 		end
