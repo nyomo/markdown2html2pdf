@@ -1,21 +1,24 @@
 markdown_files = Dir.open("./docs",&:to_a).reject{ |f| f.match(%r{^\.}) }.map{|f| f.sub(/\.md/,'')}
 
+TXTDIR = './docs'
+PDFDIR = './pdf'
+
 desc 'generate pdf'
 markdown_files.each do |filename|
-  file "./pdf/" + filename + ".pdf" => [ "./docs/"+filename+'.md' , "./header.html" ] do
+  file PDFDIR+"/" + filename + ".pdf" => [ TXTDIR + "/"+filename+'.md' , "./header.html" ] do
     require 'kramdown'
-    header = File.read('./header.html')
+    header = File.read('./header.html').gsub("BASEDIRISHERE","file://" + Dir.pwd + '/' + TXTDIR + "/")
     footer = "</body></html>"
-    body = Kramdown::Document.new(File.read('./docs/' + filename + '.md')).to_html
-    File.open('./temp.html', 'w') do |f|
+    body = Kramdown::Document.new(File.read( TXTDIR + '/' + filename + '.md')).to_html
+    File.open(TXTDIR+'/temp.html', 'w') do |f|
       [header, body, footer].each {|s| f.puts s}
-		end
+                end
 
     require 'pdfkit'
-    html = File.read('./temp.html')
-    kit = PDFKit.new(html, :page_size => 'A4')
-    kit.to_file('./pdf/'+filename+'.pdf')
+    html = File.read(TXTDIR + '/temp.html')
+    kit = PDFKit.new(html, :page_size => 'A4',:enable_local_file_access =>'true')
+    kit.to_file(PDFDIR + '/'+filename+'.pdf')
   end
-end  
+end
 
-task :all => markdown_files.map { |filename| './pdf/' +filename + '.pdf' } 
+task :all => markdown_files.map { |filename| PDFDIR + '/' +filename + '.pdf' }
