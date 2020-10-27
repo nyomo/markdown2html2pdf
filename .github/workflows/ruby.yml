@@ -3,7 +3,8 @@ name: convert PDF
 on:
   push:
     branches: [ main ]
-
+    paths-ignore: 
+      - 'pdfs/**.pdf'
 jobs:
   build:
     runs-on: ubuntu-latest
