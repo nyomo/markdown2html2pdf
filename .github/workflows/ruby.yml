@@ -1,21 +1,11 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will download a prebuilt Ruby version, install dependencies and run tests with Rake
-# For more information see: https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
-
-name: Ruby
+name: convert PDF
 
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
-  test:
-
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,7 +17,23 @@ jobs:
       uses: ruby/setup-ruby@ec106b438a1ff6ff109590de34ddc62c540232e0
       with:
         ruby-version: 2.6
-    - name: Install dependencies
-      run: bundle install
-    - name: Run tests
-      run: bundle exec rake
+
+    - run: apt-get update
+    - run: apt-get -y install libjpeg8-dev libpng16-16 libxrender-dev libfontconfig1-dev libfreetype6 libx11-6 libssl1.1 fonts-ipafont
+    - uses: actions/checkout@v2
+    - name: git setting
+      run: |
+        git config --local user.email "your@email.test"
+        git config --local user.name "your name"
+        git config --local pull.rebase false
+    - name: bundle install
+      run: |
+        gem install bundler -v 2.1.4 --no-document
+        bundle install --path=vendor
+        bundle exec rake all
+    - name: Commit files
+      run: |
+        git add query/*
+        git commit -m "Add PDF" -a || echo "No change"
+        git push
+        
