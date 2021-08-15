@@ -1,0 +1,40 @@
+name: convert PDF
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore: 
+      - 'pdfs/**.pdf'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Ruby
+    # To automatically get bug fixes and new Ruby versions for ruby/setup-ruby,
+    # change this to (see https://github.com/ruby/setup-ruby#versioning):
+    # uses: ruby/setup-ruby@v1
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.6
+
+    - run: apt-get update
+    - run: apt-get -y install libjpeg8-dev libpng16-16 libxrender-dev libfontconfig1-dev libfreetype6 libx11-6 libssl1.1 fonts-ipafont
+    - uses: actions/checkout@v2
+    - name: git setting
+      run: |
+        git config --local user.email "your@email.test"
+        git config --local user.name "your name"
+        git config --local pull.rebase false
+    - name: bundle install
+      run: |
+        gem install bundler -v 2.1.4 --no-document
+        bundle install --path=vendor
+        bundle exec rake all
+    - name: Commit files
+      run: |
+        git add query/*
+        git commit -m "Add PDF" -a || echo "No change"
+        git push
+        
